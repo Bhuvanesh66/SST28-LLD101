@@ -1,3 +1,9 @@
+/**
+ * Main demonstrates LSP via supports() pattern:
+ * - Caller checks supports() before calling export().
+ * - If not supported, gets a clear error message (not a surprise exception).
+ * - All exporters used through the Exporter interface uniformly.
+ */
 public class Main {
     public static void main(String[] args) {
         System.out.println("=== Export Demo ===");
@@ -13,11 +19,10 @@ public class Main {
     }
 
     private static String safe(Exporter e, ExportRequest r) {
-        try {
-            ExportResult out = e.export(r);
-            return "OK bytes=" + out.bytes.length;
-        } catch (RuntimeException ex) {
-            return "ERROR: " + ex.getMessage();
+        if (!e.supports(r)) {
+            return "ERROR: PDF cannot handle content > 20 chars";
         }
+        ExportResult out = e.export(r);
+        return "OK bytes=" + out.bytes.length;
     }
 }

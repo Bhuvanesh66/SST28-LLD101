@@ -1,10 +1,23 @@
+/**
+ * SMS channel: validates phone, sends body only (no subject for SMS).
+ */
 public class SmsSender extends NotificationSender {
-    public SmsSender(AuditLog audit) { super(audit); }
+    public SmsSender(AuditLog audit, SenderConfig config) {
+        super(audit, config);
+    }
 
     @Override
-    public void send(Notification n) {
-        // Ignores subject; base type doesn't clarify expectations (smell)
+    protected SendResult validateSpecific(Notification n) {
+        if (n.phone == null || n.phone.isBlank()) {
+            return SendResult.failure("SMS ERROR: phone must not be null");
+        }
+        return SendResult.success();
+    }
+
+    @Override
+    protected SendResult sendNotification(Notification n) {
         System.out.println("SMS -> to=" + n.phone + " body=" + n.body);
         audit.add("sms sent");
+        return SendResult.success();
     }
 }

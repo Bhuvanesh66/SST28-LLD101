@@ -1,16 +1,29 @@
 import java.nio.charset.StandardCharsets;
 
-public class JsonExporter extends Exporter {
+/**
+ * LSP-compliant: supports any non-null request.
+ * Null fields handled consistently as empty strings.
+ */
+public class JsonExporter implements Exporter {
+
+    @Override
+    public boolean supports(ExportRequest req) {
+        return req != null;
+    }
+
     @Override
     public ExportResult export(ExportRequest req) {
-        // inconsistent handling (surprise)
-        if (req == null) return new ExportResult("application/json", new byte[0]);
-        String json = "{\"title\":\"" + escape(req.title) + "\",\"body\":\"" + escape(req.body) + "\"}";
+        if (!supports(req)) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+        String body = req.body == null ? "" : req.body;
+        String json = "{\"title\":\"" + escape(req.title) + "\",\"body\":\"" + escape(body) + "\"}";
         return new ExportResult("application/json", json.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String escape(String s) {
-        if (s == null) return "";
-        return s.replace("\"", "\\\"");
+    private String escape(String value) {
+        if (value == null)
+            return "";
+        return value.replace("\"", "\\\"");
     }
 }

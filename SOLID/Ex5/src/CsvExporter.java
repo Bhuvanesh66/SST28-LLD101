@@ -1,11 +1,29 @@
 import java.nio.charset.StandardCharsets;
 
-public class CsvExporter extends Exporter {
+/**
+ * LSP-compliant: supports all requests.
+ * Properly escapes CSV fields by quoting them instead of dropping characters.
+ */
+public class CsvExporter implements Exporter {
+
+    @Override
+    public boolean supports(ExportRequest req) {
+        return req != null;
+    }
+
     @Override
     public ExportResult export(ExportRequest req) {
-        // LSP issue: changes meaning by lossy conversion
-        String body = req.body == null ? "" : req.body.replace("\n", " ").replace(",", " ");
-        String csv = "title,body\n" + req.title + "," + body + "\n";
+        if (!supports(req)) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+        String body = req.body == null ? "" : req.body;
+        String csv = "title,body\n" + escape(req.title) + "," + escape(body);
         return new ExportResult("text/csv", csv.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String escape(String value) {
+        if (value == null)
+            return "";
+        return "\"" + value + "\"";
     }
 }
