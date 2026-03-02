@@ -13,7 +13,7 @@ What you have (Starter)
 - `MetricsRegistry` is *intended* to be global, but:
   - `getInstance()` can return different objects under concurrency.
   - The constructor is not private.
-  - Reflection can create multiple instances.
+  - Reflection can create multiple instance s.
   - Serialization/deserialization can produce a new instance.
 - `MetricsLoader` incorrectly uses `new MetricsRegistry()`.
 

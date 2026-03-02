@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  */
 public final class Validation {
 
-    private static final Pattern EMAIL = Pattern.compile("^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    private static final Pattern EMAIL = Pattern.compile("^[^@\s]+@[^@\s]+\\.[^@\s]+$");
     private static final Pattern TICKET_ID = Pattern.compile("^[A-Z0-9-]+$");
 
     private Validation() {}
@@ -54,5 +54,10 @@ public final class Validation {
         if (value < min || value > max) {
             throw new IllegalArgumentException(fieldName + " must be between " + min + " and " + max);
         }
+    }
+
+    public static void requireTitle(String title) {
+        requireNonBlank(title, "title");
+        requireMaxLen(title, 80, "title");
     }
 }

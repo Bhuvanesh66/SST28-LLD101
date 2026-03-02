@@ -18,7 +18,7 @@ What you have (Starter)
 
 Tasks
 1) Refactor `IncidentTicket` to an **immutable class**
-   - private final fields
+   - private final fie lds
    - no setters
    - defensive copying for collections
    - safe getters (no internal state leakage)
