@@ -11,7 +11,7 @@ import java.util.Properties;
  * - Uses 'new MetricsRegistry()' instead of the singleton.
  *
  * TODO (student):
- *  - Use MetricsRegistry.getInstance() and remove all direct instantiation.
+ * - Use MetricsRegistry.getInstance() and remove all direct instantiation.
  */
 public class MetricsLoader {
 
@@ -19,9 +19,8 @@ public class MetricsLoader {
         Properties props = new Properties();
         try (FileInputStream fis = new FileInputStream(path)) {
             props.load(fis);
-        } 
+        }
 
- 
         // BROKEN: should not create a new instance
         MetricsRegistry registry = MetricsRegistry.getInstance();
 
