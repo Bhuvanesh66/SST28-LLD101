@@ -53,3 +53,19 @@ Saved booking: H-7781
 
 ## 10. Stretch goals
 - Add “late fee” rule without editing the main calculation loop.
+
+## Detailed Refactoring Solution (OCP)
+The `HostelFeeCalculator` suffered from a rigid `switch` statement design. Every time a new room type or add-on was introduced, developers had to crack open the core calculator and modify the switch cases, risking breaking existing billing logic.
+
+### 1. The `FeeComponent` Abstraction
+To make the system Open for Extension, we created a unified `FeeComponent` interface (or abstract class). This interface promises a way to calculate a price (e.g., `calculateMonthlyFee()` and `calculateDeposit()`).
+
+### 2. Implementing the Components
+We replaced the `switch` cases with dedicated classes:
+- **Rooms**: `SingleRoom`, `DoubleRoom`, `SuiteRoom`
+- **Add-Ons**: `LaundryAddOn`, `MessAddOn`
+
+### 3. The Polymorphic Calculator
+We modified the `HostelFeeCalculator` to accept a `List<FeeComponent>`. To calculate the final total, the calculator simply iterates over the list and asks each component for its price. It doesn't need to know if it's currently looking at a "Suite" or a "Laundry" add-on.
+
+This perfectly satisfies OCP: new room types and add-ons can be created freely as new classes, and the calculator's core arithmetic loop never has to be updated.

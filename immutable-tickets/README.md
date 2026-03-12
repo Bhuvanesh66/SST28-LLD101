@@ -58,5 +58,24 @@ Build/Run (Starter demo)
 Tip
 After refactor, you can update `TryIt` to show:
 - building a ticket
-- “updating” by creating a new instance
 - tags list is not mutable from outside
+
+## Detailed Refactoring Solution (Immutable & Builder Patterns)
+The original `IncidentTicket` class was highly dangerous. Because it was mutable (having public setters), any piece of code could accidentally change a ticket's status or assignee long after creation, leading to auditing nightmares.
+
+### 1. Achieving Immutability
+We locked down the `IncidentTicket` class:
+- All fields were made `private final`.
+- All `setX()` methods were deleted.
+- The constructor was made private.
+- Collections (like `tags`) were defensively copied so external lists couldn't mutate the internal state.
+
+### 2. Implementing the Builder
+To handle the difficult process of constructing an object with many optional fields, we introduced the **Builder Pattern** (`IncidentTicket.Builder`).
+The builder uses fluent methods (`builder.title("...").priority("...")`) to gather the data.
+
+### 3. Centralizing Validation
+Previously, validation rules were scattered across the codebase. We moved **all** rules (like ensuring `id` formatting or checking `slaMinutes`) directly into the `Builder.build()` method. Now, it is literally impossible to construct an invalid `IncidentTicket`.
+
+### 4. Updating the System
+Instead of calling `ticket.setAssignee(...)` to update a record, the system now uses a "copy constructor" approach (e.g., `ticket.toBuilder().assignee(...).build()`). This creates a brand new, valid, immutable ticket object, perfectly preserving the audit trail.

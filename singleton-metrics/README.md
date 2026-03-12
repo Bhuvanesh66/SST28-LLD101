@@ -59,3 +59,20 @@ Useful Demo Commands (after you fix it)
 Note
 This starter is intentionally broken. Some of these checks will "succeed" in breaking the singleton
 until you fix the implementation.
+
+## Detailed Refactoring Solution (Singleton Pattern)
+The original `MetricsRegistry` claimed to be global, but because it had a public constructor and a flawed `getInstance()` method, multiple threads or pieces of code could accidentally create multiple different registries, causing metrics to be lost.
+
+### 1. The Basic Singleton
+To ensure only one instance ever exists, we implemented the true **Singleton Pattern**:
+- Made the constructor `private` so nobody else can call `new MetricsRegistry()`.
+- Created a `private static` variable to hold the sole instance.
+- Provided a `public static getInstance()` method to retrieve it.
+
+### 2. Thread Safety & Lazy Loading
+If two threads call `getInstance()` at the exact same millisecond before the instance is created, they might both create one. To fix this safely and efficiently, we used **Double-Checked Locking** (or the Bill Pugh Initialization-on-Demand Holder idiom). This ensures the object is only created exactly when it's first requested (Lazy Loading), but securely blocks additional threads from creating duplicates.
+
+### 3. Stopping Attacks
+Java has advanced features that can break simple Singletons:
+- **Reflection**: A hacker could use Java Reflection to forcefully change the constructor from `private` to `public`. To stop this, we added code *inside* the constructor that throws an Exception if `instance != null`.
+- **Serialization**: If the Singleton is saved to a file and loaded back into memory, Java creates a new object. We stopped this by implementing the `readResolve()` method, instructing Java to discard the newly loaded object and just return the existing `getInstance()` instead.

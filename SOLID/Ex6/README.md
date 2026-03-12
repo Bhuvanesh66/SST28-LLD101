@@ -50,3 +50,18 @@ AUDIT entries=3
 
 ## 10. Stretch goals
 - Add a new sender without editing existing ones.
+
+## Detailed Refactoring Solution (LSP)
+The `NotificationSender` base class had several subclasses (Email, SMS, WhatsApp) that were arbitrarily choosing how to handle data. Because each communication channel has vastly different physical limits, trying to force them into identical behavior led to broken promises.
+
+### 1. Fixing the Contract
+The problem was that the base contract was either too strict or too vague. Subclasses were reacting by throwing runtime exceptions or silently truncating data.
+To fix this, we updated the subclasses to guarantee the base contract is preserved:
+- Instead of the `EmailSender` silently truncating messages over a certain length (which changes the semantic meaning of the message), it should either properly paginate or strictly refuse and throw a defined error (if the new contract allows it).
+
+### 2. Validation Layers (Composition)
+Instead of putting all validation into the generic `send()` method:
+- **`WhatsAppSender`**: We introduced a Normalization/Validation step *before* sending. If a number doesn't have a country code, the normalizer fixes it to `+91` so the WhatsApp sender doesn't crash.
+- **`SmsSender`**: If SMS doesn't support a subject line, the sender merges the subject and body `"[SUBJECT]: Body"` so no data is lost.
+
+By normalizing inputs, we ensured that the calling code never gets unexpectedly rejected just because it switched from an Email sender to a WhatsApp sender.

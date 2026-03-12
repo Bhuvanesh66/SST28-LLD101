@@ -53,3 +53,21 @@ Saved evaluation for roll=23BCS1001
 
 ## 10. Stretch goals
 - Read rule thresholds from a config object without editing rule logic.
+
+## Detailed Refactoring Solution (OCP)
+The original `EligibilityEngine` violated the Open/Closed Principle because every time a new eligibility rule was introduced (e.g., a "late fee" check), developers had to modify the core `evaluate()` method and add another `if/else` block. 
+
+### 1. Abstracting the Rules
+We solved this by defining a common interface: `EligibilityRule`. This interface defines a single method, usually `evaluate(StudentProfile)`.
+
+### 2. Creating Concrete Rule Classes
+We stripped the hard-coded `if/else` blocks and converted each physical check into its own class that implements `EligibilityRule`:
+- `CgrRule`
+- `AttendanceRule`
+- `CreditsRule`
+- `DisciplinaryFlagRule`
+
+### 3. Updating the Engine
+The `EligibilityEngine` was rewritten to accept a `List<EligibilityRule>`. When evaluating a student, it simply loops through this list.
+
+**Why this works:** The system is now *Open for Extension, but Closed for Modification*. If the university adds a new "Library Dues" check, we simply create a new `LibraryDuesRule` class and append it to our list. The `EligibilityEngine` class itself never needs to be edited again.

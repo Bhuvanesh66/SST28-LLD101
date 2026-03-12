@@ -81,3 +81,20 @@ StudentRecord{id='SST-2026-0001', name='Riya', email='riya@sst.edu', phone='9876
 ## 10. Stretch goals
 - Add a second input example that fails validation, without duplicating logic.
 - Make program list configurable without touching onboarding workflow code.
+
+## Detailed Refactoring Solution (SRP)
+To resolve the Single Responsibility Principle violations in `OnboardingService`, we refactored the system by decoupling the "God Method" into several specialized components.
+
+### 1. Identifying Responsibilities
+The original `registerFromRawInput` method was trying to do parsing, validation, ID generation, database persistence, and console printing all at once.
+
+### 2. Extracting Components
+We created new, dedicated classes for each responsibility:
+- **`InputParser`**: Takes the raw string and converts it into a structured `StudentRecord` object.
+- **`StudentValidator`**: Encapsulates the business rules (e.g., email parsing, phone number digit checks).
+- **`IdGenerator`**: Responsible solely for creating the unique generic ID format (e.g., `SST-2026-0001`).
+- **`StudentDatabase` (or `Store`)**: A dedicated interface handling persistence, abstracting away the concrete `FakeDb`.
+- **`OnboardingPrinter`**: Responsible specifically for formatting and displaying the output to the console.
+
+### 3. Orchestration
+The modified `OnboardingService` now acts entirely as an orchestrator. It receives raw input and simply passes it along the chain—from parser, to validator, to database, to printer—without knowing the intricate details of *how* any of those steps are actually implemented. If the validation logic or database changes later, the orchestration code remains completely untouched.

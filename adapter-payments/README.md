@@ -27,3 +27,19 @@ cd adapter-payments/src
 javac com/example/payments/*.java
 java com.example.payments.App
 ```
+
+## Detailed Refactoring Solution (Adapter Pattern)
+The original `OrderService` was tightly wound around specific third-party SDKs (`FastPayClient` and `SafeCashClient`). Any change to these external libraries, or the addition of a new one, would force us to modify the core `OrderService` logic.
+
+### 1. The Target Interface
+We introduced the **Adapter Pattern** by establishing a single "Target" interface that the `OrderService` actually wants to talk to: `PaymentGateway`. This interface specifies a simple `charge(String customerId, int amountCents)` method.
+
+### 2. Creating the Adapters
+We then created two Adapter classes:
+- **`FastPayAdapter`**: Implements `PaymentGateway`. Inside its `charge()` method, it translates our universal parameters into the specific method calls required by `FastPayClient`.
+- **`SafeCashAdapter`**: Implements `PaymentGateway`. Inside its `charge()` method, it translates the parameters for the `SafeCashClient`.
+
+### 3. The Refactored Client
+The `OrderService` was updated to accept *only* the `PaymentGateway` interface via Constructor Injection. It no longer contains a massive `switch` statement checking the "provider" string. 
+
+Because of the Adapter, the `OrderService` is entirely insulated from the messy reality of third-party SDKs. New payment gateways can be easily added by writing a new adapter class without ever touching the `OrderService`.

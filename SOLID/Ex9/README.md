@@ -51,3 +51,26 @@ FINAL: PASS (total=90)
 
 ## 10. Stretch goals
 - Add a second grading strategy without editing pipeline logic.
+
+## Detailed Refactoring Solution (DIP)
+The `EvaluationPipeline` violated the Dependency Inversion Principle because a high-level module (the pipeline orchestrator) instantiated low-level concrete modules (the specific graders and checkers) directly using the `new` keyword.
+
+### 1. Introducing Abstractions
+We created simple, focused interfaces for every step of the pipeline:
+- **`PlagiarismChecker`** interface (abstracts the check logic)
+- **`Grader`** interface (abstracts the grading logic)
+- **`ReportWriter`** interface (abstracts the file generation)
+
+The concrete classes (`BasicPlagiarismChecker`, `StandardGrader`, `FileReportWriter`) were updated to simply `implement` these interfaces.
+
+### 2. Constructor Injection
+We modified the `EvaluationPipeline` to remove all the `new` keywords. Instead, we injected the dependencies through its constructor:
+```java
+public EvaluationPipeline(PlagiarismChecker checker, Grader grader, ReportWriter writer) {
+    this.checker = checker;
+    this.grader = grader;
+    this.writer = writer;
+}
+```
+
+**Why this works:** The high-level pipeline now depends strictly on *abstractions*, not concretes. This allows us to easily pass in a "Mock" `ReportWriter` during testing, or swap out the `BasicPlagiarismChecker` for an `AdvancedAIPlagiarismChecker` later without ever editing the `EvaluationPipeline` class.

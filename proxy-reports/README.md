@@ -40,3 +40,22 @@ Build & Run
 Repo intent
 This is a refactoring assignment: the starter code works, but it does not use Proxy properly.
 Students should refactor the design so access control + lazy loading happen via a proxy.
+
+## Detailed Refactoring Solution (Proxy Pattern)
+The original `ReportFile` class was inefficient and insecure. The moment it was instantiated, it immediately performed an expensive disk read, and there were no checks to see if the user was actually allowed to look at the file.
+
+### 1. The Proxy Interface
+We applied the **Proxy Pattern** by creating a common `Report` interface with a `display(User)` method. Both the real implementation and our new proxy will implement this.
+
+### 2. The Real Subject
+We refactored the original reading logic into `RealReport`. However, we updated it so that when `RealReport` is instantiated, it reads the disk *once* and saves the content to a local variable (Caching).
+
+### 3. The Proxy Subject
+We created `ReportProxy`. This class acts as a bouncer and an efficiency manager for `RealReport`.
+When `ReportProxy` is created, it does **not** load the file. It only stores the file ID.
+When `ReportProxy.display(User)` is called:
+1.  **Access Control**: It checks if the User has the right permissions. If not, it rejects them immediately.
+2.  **Lazy Loading**: If the user is allowed, it checks if the `RealReport` object exists. If it doesn't, it instantiates `RealReport` (which reads the file).
+3.  **Delegation**: It then delegates the display command to the `RealReport`.
+
+Because the client interacts with the `Report` interface, it has no idea it is talking to a security proxy instead of the real file loader.

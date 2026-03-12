@@ -59,3 +59,19 @@ Saved invoice: INV-1001 (lines=7)
 
 ## 10. Stretch goals
 - Add a second invoice for a staff member with different discount policy.
+
+## Detailed Refactoring Solution (SRP)
+The original `CafeteriaSystem` was a bloated class handling everything from menu lookups to tax calculations and formatting receipts. We broke this down to enforce the Single Responsibility Principle.
+
+### 1. Separating the Math from the System
+We isolated the financial logic into dedicated rule components:
+- **`TaxCalculator`**: Encapsulates the 5% tax logic. If the tax rate changes, only this class needs updating.
+- **`DiscountCalculator`**: Encapsulates the business rules for applying flat or percentage-based discounts.
+
+### 2. Segregating Receipt Formatting
+Formatting strings and manipulating currency display is a separate concern from calculating totals. We extracted this into an **`InvoicePrinter`** class. Now, if the cafeteria decides to print receipts in JSON or change the layout, the financial logic isn't touched.
+
+### 3. Abstracting Persistence
+We moved the file-saving logic behind an `InvoiceRepository` interface. The main system no longer knows if it's saving to memory, a text file, or a real database.
+
+Ultimately, the `CafeteriaSystem` coordinate the interaction between calculating totals, generating the invoice, and saving it, ensuring each class acts as an isolated, easily testable unit.

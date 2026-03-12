@@ -49,3 +49,29 @@ RECEIPT: R-501 | fare=90.00
 
 ## 10. Stretch goals
 - Add a “mock” allocator and gateway for tests without touching booking logic.
+
+## Detailed Refactoring Solution (DIP)
+The `TransportBookingService` was tightly coupled to its dependencies (`DistanceCalculator`, `DriverAllocator`, `PaymentGateway`). Creating them directly inside the `book()` method meant the service was untestable and inflexible, violating the Dependency Inversion Principle.
+
+### 1. Creating the Interfaces
+First, we abstracted the specific, concrete tools into generic interfaces:
+- **`DistanceService`**
+- **`DriverService`**
+- **`PaymentService`**
+
+We then ensured our concrete classes (like `PaymentGateway`) implemented these interfaces.
+
+### 2. Injecting the Dependencies
+We removed the hard-coded `new` instantiations from the `TransportBookingService`. Instead, we updated the class to accept its dependencies via Constructor Injection:
+```java
+public TransportBookingService(DistanceService dist, DriverService alloc, PaymentService pay) {
+    this.dist = dist;
+    this.alloc = alloc;
+    this.pay = pay;
+}
+```
+
+### 3. Wiring the Application
+Responsibility for "wiring" the application was pushed up to `Main.java`. `Main` now instantiates the concrete classes (`PaymentGateway`, etc.) and passes them into the `TransportBookingService` constructor. 
+
+The `TransportBookingService` now completely ignores *how* payments are processed or drivers are found; it purely orchestrates the business logic through abstractions.

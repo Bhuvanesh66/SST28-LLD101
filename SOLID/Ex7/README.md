@@ -55,3 +55,19 @@ AC OFF
 
 ## 10. Stretch goals
 - Add a “smart board” device without implementing unrelated methods.
+
+## Detailed Refactoring Solution (ISP)
+The original `SmartClassroomDevice` was a "fat" interface containing methods that not every device could perform (e.g., `setTemperature` on a Light, or `scanStudent` on an AC). This violates the Interface Segregation Principle because classes (devices) were forced to implement methods they didn't need, usually by returning dummy values or throwing exceptions.
+
+### 1. Segregating by Capability
+We resolved this by breaking the giant interface into several tiny, highly-specific interfaces based on actual device capabilities:
+- **`PowerControl`**: For turning devices ON/OFF.
+- **`TemperatureControl`**: Specific to the Air Conditioner or smart heaters.
+- **`BrightnessControl`**: Specific to the Lights or Projector.
+- **`AttendanceScanner`**: Specific to the RFID scanner.
+
+### 2. Selective Implementation
+Now, a `LightsPanel` class only implements `PowerControl` and `BrightnessControl`. It completely ignores `TemperatureControl`. It is no longer forced to provide a fake implementation for unrelated methods.
+
+### 3. Smart Controller
+When the `SmartController` needs to adjust the temperature, it doesn't query a generic "device". It specifically looks for objects that implement the `TemperatureControl` interface. This prevents runtime errors and guarantees that the device actually supports the action being requested.

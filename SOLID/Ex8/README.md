@@ -50,3 +50,21 @@ Summary: ledgerBalance=5000, minutes=1, events=1
 
 ## 10. Stretch goals
 - Add “publicity lead” without implementing finance methods.
+
+## Detailed Refactoring Solution (ISP)
+The initial `ClubAdminTools` interface was overloaded. It bundled financial ledgers, meeting minutes, and event creation into a single contract. This meant the Club Secretary (who only takes minutes) was forced to implement financial ledger methods, violating the Interface Segregation Principle.
+
+### 1. Identifying the Client Groups
+To fix this, we looked at *who* calls these methods rather than the tool itself. We identified three distinct groups:
+1.  **Finance Clients** (Treasurer)
+2.  **Records Clients** (Secretary)
+3.  **Event Clients** (Event Lead)
+
+### 2. Creating Role-Specific Interfaces
+We split `ClubAdminTools` into three very thin interfaces:
+- **`FinanceTools`**: `addLedgerEntry()`
+- **`MinutesTools`**: `addMinutes()`
+- **`EventTools`**: `createEvent()`
+
+### 3. Safer Client Code
+The `ClubConsole` was refactored so that when a Treasurer logs in, the console only depends on the `FinanceTools` interface. The Treasurer can no longer accidentally trigger `createEvent()` because that method isn't even available on the interface they are given. New roles (like a Publicity Lead) can now be added by creating a new, isolated interface without touching the others.
